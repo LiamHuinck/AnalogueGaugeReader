@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 
 # Read the first frame to confirm capturing
-frame = cv.imread('src/20251101_103702.jpg')
+frame = cv.imread('src/images/20251101_103702.jpg')
 
 def resizeframe(frame, new_width):
     # Get the original dimensions
