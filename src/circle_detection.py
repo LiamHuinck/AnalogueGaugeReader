@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv
 
 # Read the first frame to confirm capturing
-frame = cv.imread('src/images/20251102_155836.jpg')
+frame = cv.imread('src/images/20251102_142248.jpg')
 
 def resizeframe(frame, new_width):
     # Get the original dimensions
@@ -21,9 +21,9 @@ grayimage = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 def maskgrayframe(maskingframe, lowerblackvalue, upperblackvalue):
     lower_black, upper_black = np.array([lowerblackvalue]), np.array([upperblackvalue])
     mask = cv.inRange(maskingframe, lower_black, upper_black)
-    return cv.blur(~mask, (8, 8))
+    return cv.blur(~mask, (7, 7))
 
-maskedimage = maskgrayframe(grayimage, 0, 100)
+maskedimage = maskgrayframe(grayimage, 0, 130)
 
 circles = cv.HoughCircles(
     maskedimage,
@@ -47,39 +47,27 @@ if circles is not None:
         cv.circle(mask, (i[0],i[1]), i[2], 255, -1)
         maskedimage = cv.bitwise_and(maskedimage, maskedimage, mask=mask)
 
-outlinedimage = cv.Canny(maskedimage, 40, 80, None, 3)    
-lines = cv.HoughLines(outlinedimage, 1, np.pi / 180, 90)
+outlinedimage = cv.Canny(maskedimage, 40, 100, None, 3)    
+lines = cv.HoughLinesP(outlinedimage, 1, np.pi / 90, 70, None, minLineLength = 110, maxLineGap= 8)
 if lines is not None:
     if len(lines) > 1:
         print("multiple lines found")
         for i in range(0, len(lines)):
-            rho = lines[i][0][0]
-            theta = lines[i][0][1]
-            a = math.cos(theta)
-            b = math.sin(theta)
-            x0 = a * rho
-            y0 = b * rho
-            pt1 = (int(x0 + (1000)*(-b)), int(y0 + (1000)*(a)))
-            pt2 = (int(x0 - (1000)*(-b)), int(y0 - (1000)*(a)))
-            cv.line(frame, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+            l = lines[i][0]
+            cv.line(frame, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv.LINE_AA)
     else:
         for i in range(0, len(lines)):
-            rho = lines[i][0][0]
-            theta = lines[i][0][1]
-            a = math.cos(theta)
-            b = math.sin(theta)
-            x0 = a * rho
-            y0 = b * rho
-            pt1 = (int(x0 + (1000)*(-b)), int(y0 + (1000)*(a)))
-            pt2 = (int(x0 - (1000)*(-b)), int(y0 - (1000)*(a)))
-            cv.line(frame, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+            l = lines[i][0]
+            cv.line(frame, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv.LINE_AA)
 else:
     print("no lines found")
 #calculation of the hygro reading
 # where the 0.17 is a correction for the rotation of the meter
 # 1.5 pi is the radian of the meter
+
+
 try:
-    hygro_reading = (theta+0.17*1.5*math.pi)/(1.5*math.pi)
+    hygro_reading = (1+0.17*1.5*math.pi)/(1.5*math.pi)
     print(hygro_reading)
 except:
     print("No reading possible")
