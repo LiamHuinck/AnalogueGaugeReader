@@ -3,6 +3,8 @@ This repository is for reading out the value of a analogue Gauge, in this specif
 
 In this README you will find the different stages/steps of developing the script with the goal described above in mind.
 
+# README Status
+Currently the code is further than the README, the README misses the line finding function and the calculation function in its explanation. This will be added some time soon.
 
 # Prerequisites
 For following the steps/using this code you need to have certain python packages installed, the required packages can be found in the requirements.txt. To install all of them at once use pip install -r /path/to/requirements.txt .
