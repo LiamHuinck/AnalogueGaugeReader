@@ -26,3 +26,27 @@ This image is already easier to process however if we apply the function cv.Houg
 # Step 3: Detect circles
 Using the cv.HoughCircles() command we can find the circles in the image and thus locate our gauge meter. For the command we use the maskedimage and some hyperparameters (these will probably have to be tweaked depending on the use case, look for the documentation from OpenCV for this function for more info). This results in an array with 3 columns containing the center coordinates and the radius of the circle. We draw these points for each of the found circles onto the resized image (with colour) and receive the results shown below.
 ![image info](./src/images/circle_detected_20251101_103702.jpg)
+
+# Step 4: Detect the pointer
+
+This section is currently based on the fact only 1 line has been found, there will be a branch at some point where code will be written to detect which lines are of interest.
+
+Similarly to cv.HoughCircles() there is a command in OpenCV that detects lines. This comes in two flavours cv.HoughLines() and cv.HoughLinesP(). The difference is that HoughLines works using the polar coordinate system (radius and angle) and HoughlinesP (the p stands for probabilistic) the Cartesian coordinate system (x and y). HoughlinesP is considered more efficient and gives use the start and end coordinates which is also simpler to work with. Given the the coordinates we can draw the line onto the image, see picture. 
+![image info](./src/images/pointer_detected_20251101_103702.jpg)
+
+# Step 5: Calculate the angle
+The next step is to calculate the angle of our point. This is not that hard to do since we have the 3 required points. we have one that describes the start of the line, one the ending of the line and one the middle of the detected circle. To check which direction we are point we take the bigger value of the formula below:
+
+ $Distance = \sqrt{(X_{in} - X_{circle})^2 + (Y_{in} - Y_{circle})^2}$
+
+ In which $X_{in}$ is the X coordinate of the line point we want to test, $X_{circle}$ is the X value at the center of the detected circle (and the same goes for Y)
+
+This gives us two distances (one for each end of the detected line), by taking the maximum one we know which side is the direction the line is pointing in. Given this information we can calculate the angle between the detected line and the middlepoint of the circle by using the function described below.
+
+$pointerangle = arctan2(Y_{in}-Y_{circle}, X_{in}-X_{circle})$
+
+This angle will give use the angle between the positive X-axis, actually we get the wrong angle (the Y value should be negative resulting in a negative angle) in this case ~57.53 degrees. However this works out later on, since instead of subtracting the negative angle, we can add the positive one. This angle is then added to the offset angle of the measurement reading. In this example the offset is 140 degrees (the 0% reading is 140 degrees in positive rotation). This results in a total angle of ~197.53 degrees. The total range of the readings (0% to 100%) is 270 degrees. We can calculate the reading by using the formula below.
+
+$hygroreading =  totalangle / 270$
+
+In this case the hygro reading is about 73%! Looking back at the very first image, this seems to match pretty well (considering I compensated the offset angle by knowing the true value, which is very cheeky, but we will solve this problem in another section once I found a reliable way to solve this).
