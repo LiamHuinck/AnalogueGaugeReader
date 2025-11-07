@@ -1,7 +1,17 @@
 import math
 import numpy as np
 import cv2 as cv
+import json
+import time
+from datetime import datetime, timezone
+import paho.mqtt.publish as publish
 
+
+broker_address = "localhost"
+broker_port = 1883
+
+topic = "test/topic1"
+hygro_reading = 0
 # Helper functions
 def resizeframe(frame, new_width):
     # Get the original dimensions
@@ -93,17 +103,23 @@ while True:
         totalangle = calculateangle(lines,circles, 140)
     except:
         pass
+
     # calculation of the hygro reading
     # 270 is the measuring degrees of the hygro meter
     try:
-        hygro_reading = (totalangle)/(270)
-        frame = cv.putText(frame, f"Humidity: {hygro_reading*100:.0f}%", (00, 200), cv.FONT_HERSHEY_SIMPLEX, 
+        hygro_reading = (totalangle)/(270)*100
+        frame = cv.putText(frame, f"Humidity: {hygro_reading:.0f}%", (00, 200), cv.FONT_HERSHEY_SIMPLEX, 
                     1, (255,255,255), 2, cv.LINE_AA)
+        datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc), "deviceId":"LogitechStreamcam"}
+        payload = json.dumps(datadictionary, default=str)
+        publish.single(topic, payload, hostname=broker_address, port= broker_port)
     except:
         print("No reading possible")
-    
+
     # Show result
     cv.imshow('Detected Circle', frame)
+
+    time.sleep(1)
     # press q to stop the capturing
     if cv.waitKey(1) == ord('q'):
         break
