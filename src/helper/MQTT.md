@@ -1,0 +1,1 @@
+To run the mosquitto broker when it is installed use the command: mosquitto.exe -v -c mosquitto.conf  in a cmd prompt when in the correct pathing

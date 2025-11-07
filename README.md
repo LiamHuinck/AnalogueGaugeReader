@@ -71,5 +71,7 @@ After some tweaking and setting the camera and light source up I managed to get 
 
 https://github.com/user-attachments/assets/c6d5004f-3fcf-4b46-b434-8379c2947cbd
 
+# Step 8: Use MQTT to communicate data
 
+We are starting to work towards a real IoT solution for real time intelligence, but it's missing one of the most crucial things. Communication over an internet connection! In this project we will use MQTT to communicate the data. I will not go too much into detail about how to set it up, maybe I will if people would find it interesting. For testing I just used the localhost adress and the standard port. To see the results I used MQTT explorer (https://mqtt-explorer.com/). MQTT requires something called an MQTT broker in this case I installed Eclipse Mosquitto (https://mosquitto.org/). Basically, I need to run the code, the code will create a package of information that is then published to the MQTT broker, which then publishes it to the client. The result looks like this in MQTT explorer (the images update slower because I added a sleep function to reduce computational resources used).
 
