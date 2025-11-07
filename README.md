@@ -64,3 +64,12 @@ $hygroreading =  totalangle / 270$
 In this case the hygro reading is about 73%! Looking back at the very first image, this seems to match pretty well (considering I compensated the offset angle by knowing the true value, which is very cheeky, but we will solve this problem in another section once I found a reliable way to solve this).
 
 ![image info](./src/images/reading_showing_20251101_103702.jpg)
+
+# Step 7: Using the webcam for the readings
+
+After some tweaking and setting the camera and light source up I managed to get a pretty good reading of the meter (once again disclaimer that the offset angle is cheated). This setup has proved to be very sensitive though to the light source, surrounding area, angle of the meter and parameters chosen. Therefor the setup will probably have to be tweaked in every setting and monitored for a decent amount of time to make sure it will consistently work. But with all these conditions kept in mind the video below is created from using a USB webcam feed!
+
+https://github.com/user-attachments/assets/c6d5004f-3fcf-4b46-b434-8379c2947cbd
+
+
+
