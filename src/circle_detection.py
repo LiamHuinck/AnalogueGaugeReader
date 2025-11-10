@@ -5,7 +5,7 @@ import json
 import time
 from datetime import datetime, timezone
 import paho.mqtt.publish as publish
-
+from credentials import login
 
 broker_address = "localhost"
 broker_port = 1883
@@ -43,11 +43,12 @@ def calculateangle(lines,circles, correctiondegrees):
     totalangle = correctiondegrees+angle
     return totalangle
 
-capturedevice = cv.VideoCapture(0)
+capturedevice = cv.VideoCapture('rtsp://'+login+'@192.168.6.226:554/stream1')
 if not capturedevice.isOpened():
     print("Can't open camera")
     exit()
 
+count = 0
 
 while True:
     ret, frame = capturedevice.read()
@@ -110,16 +111,17 @@ while True:
         hygro_reading = (totalangle)/(270)*100
         frame = cv.putText(frame, f"Humidity: {hygro_reading:.0f}%", (00, 200), cv.FONT_HERSHEY_SIMPLEX, 
                     1, (255,255,255), 2, cv.LINE_AA)
-        datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc), "deviceId":"LogitechStreamcam"}
-        payload = json.dumps(datadictionary, default=str)
-        publish.single(topic, payload, hostname=broker_address, port= broker_port)
+        if count == 0 or count % 30 == 0:
+            datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc), "deviceId":"visiontest"}
+            payload = json.dumps(datadictionary, default=str)
+            publish.single(topic, payload, hostname=broker_address, port= broker_port)
     except:
         print("No reading possible")
 
     # Show result
     cv.imshow('Detected Circle', frame)
 
-    time.sleep(1)
+    count += 1
     # press q to stop the capturing
     if cv.waitKey(1) == ord('q'):
         break
