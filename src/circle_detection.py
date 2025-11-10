@@ -5,7 +5,7 @@ import json
 import time
 from datetime import datetime, timezone
 import paho.mqtt.publish as publish
-from credentials import login
+from credentials import login, ip
 
 broker_address = "localhost"
 broker_port = 1883
@@ -43,7 +43,7 @@ def calculateangle(lines,circles, correctiondegrees):
     totalangle = correctiondegrees+angle
     return totalangle
 
-capturedevice = cv.VideoCapture('rtsp://'+login+'@192.168.6.226:554/stream1')
+capturedevice = cv.VideoCapture('rtsp://'+login+'@'+ip+'/stream1')
 if not capturedevice.isOpened():
     print("Can't open camera")
     exit()
