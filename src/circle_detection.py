@@ -10,7 +10,9 @@ from credentials import login, ip
 broker_address = "localhost"
 broker_port = 1883
 
-topic = "test/topic1"
+devicename = "visiontest"
+
+topic = f"vision/guage/{devicename}"
 hygro_reading = 0
 # Helper functions
 def resizeframe(frame, new_width):
@@ -114,7 +116,7 @@ while True:
         if count == 0 or count % 30 == 0:
             datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc), "deviceId":"visiontest"}
             payload = json.dumps(datadictionary, default=str)
-            publish.single(topic, payload, hostname=broker_address, port= broker_port)
+            publish.single(topic+"/telemetry", payload, hostname=broker_address, port=broker_port)
     except:
         print("No reading possible")
 
