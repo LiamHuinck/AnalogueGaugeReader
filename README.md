@@ -79,4 +79,4 @@ https://github.com/user-attachments/assets/5b076dad-6363-4f84-b03b-d32507b5ec7a
 
 # IP webcam implementation 
 
-So for the release the webcam used is actually an IP webcam, this has now been implemented in the code by creating a credentials.py file with in the variables login and ip. This is needed because I don't want to share those publicly and those settings will be different for everyone anyway. If you do not want to work with an extra .py file then feel free to change the code so that it works with your wishes for the implementation.
+So for the release the webcam used is actually an IP webcam, this has now been implemented in the code by creating a credentials.py file with in the variables login and ip. This is needed because I don't want to share those publicly and those settings will be different for everyone anyway. If you do not want to work with an extra .py file then feel free to change the code so that it works with your wishes for the implementation. To set this up it took some tinkering with the network settings on the modem. For setting up the code I refer to the link in Step 1.
