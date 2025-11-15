@@ -1,0 +1,6 @@
+services:
+  analoguegaugereader:
+    image: analoguegaugereader
+    build:
+      context: .
+      dockerfile: ./Dockerfile

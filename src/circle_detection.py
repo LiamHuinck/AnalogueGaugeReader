@@ -2,10 +2,10 @@ import math
 import numpy as np
 import cv2 as cv
 import json
-import time
 from datetime import datetime, timezone
 import paho.mqtt.publish as publish
 from credentials import login, ip
+import os
 
 # Helper functions
 def resizeframe(frame, new_width):
@@ -38,16 +38,40 @@ def calculateangle(lines,circles, correctiondegrees):
     totalangle = correctiondegrees+angle
     return totalangle
 
-debug = True
-broker_address = "localhost"
-broker_port = 1883
 
-devicename = "visiontest"
+webcamip = os.environ['webcamip']
+webcamport = os.environ['webcamport']
+webcamusername = os.environ['webcamusername']
+webcampassword = os.environ['webcampassword']
+
+try:
+    broker_port = int(os.environ['brokerport'])
+except:
+    broker_port = 1883
+
+try:
+    broker_address = os.environ['brokeraddress']
+except:
+    broker_address = "localhost"
+
+try:
+    devicename = os.environ['devicename']
+except:
+    devicename = "visiontest"
+
+try:
+    debug = os.environ['debug']=='True'
+except:
+    debug = False
+
+try:
+    framecount = int(os.environ['readingdelay'])
+except:
+    framecount = 30
 
 topic = f"vision/guage/{devicename}"
 hygro_reading = 0
 count = 0
-framecount = 30
 
 try:
     capturedevice = cv.VideoCapture('rtsp://'+login+'@'+ip+'/stream1')
@@ -148,9 +172,6 @@ while True:
         circledebugdictionary = {"key": "circles", "value": circles, "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
         payload = json.dumps(datadictionary, default=str)
         publish.single(topic+"/debug", payload, hostname=broker_address, port=broker_port)
-
-    # Show result
-    cv.imshow('Detected Circle', frame)
 
     count += 1
     # press q to stop the capturing
