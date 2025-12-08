@@ -73,6 +73,11 @@ try:
 except:
     clientid = "vision-1"
 
+try:
+    angleoffset = int(os.environ['angleoffset'])
+except:
+    angleoffset = 220
+    
 topic = f"vision/guage/{devicename}"
 hygro_reading = 0
 count = 0
@@ -166,9 +171,9 @@ while True:
 
     # calculation of the angle that the line is drawn at and which side it is pointing to
     # call function to calculate the angle required to calculate the hygro value
-    # the value of 140 is for the offset of the 0 value (should be on the Y value of the circle center on the right hand side) in degrees
+    # the value of angleoffset is for the offset of the 0 value (should be on the Y value of the circle center on the right hand side) in degrees
     try:
-        totalangle = calculateangle(lines,circles, 140)
+        totalangle = calculateangle(lines,circles, angleoffset)
     except:
         pass
 
