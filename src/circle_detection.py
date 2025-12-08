@@ -42,16 +42,8 @@ webcamip = os.environ['webcamip']
 webcamport = os.environ['webcamport']
 webcamusername = os.environ['webcamusername']
 webcampassword = os.environ['webcampassword']
-
-try:
-    broker_port = int(os.environ['brokerport'])
-except:
-    broker_port = 1883
-
-try:
-    broker_address = os.environ['brokeraddress']
-except:
-    broker_address = "192.168.3.17"
+broker_port = int(os.environ['brokerport'])
+broker_address = os.environ['brokeraddress']
 
 try:
     devicename = os.environ['devicename']
@@ -61,7 +53,7 @@ except:
 try:
     debug = os.environ['debug']=='True'
 except:
-    debug = True
+    debug = False
 
 try:
     framecount = int(os.environ['readingdelay'])
@@ -77,7 +69,7 @@ try:
     angleoffset = int(os.environ['angleoffset'])
 except:
     angleoffset = 220
-    
+
 topic = f"vision/guage/{devicename}"
 hygro_reading = 0
 count = 0

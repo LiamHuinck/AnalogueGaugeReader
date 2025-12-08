@@ -84,3 +84,34 @@ So for the release the webcam used is actually an IP webcam, this has now been i
 # Deployment to IoT device
 
 For the deployment on an IoT device there should be a docker image that can be ran on the desired IoT device. For this I figured out how to make docker containers. The current docker uses python 3.10, this might be changed in a later version. The dockerfile contains the pip install statement that refers the requirement.txt of this project and creates a directory called analoguegaugereader. To create runs of the docker image I currently use docker desktop, which gaves me an easy way of including environment variables and the required docker runtime. The code has been adjusted so that environment variables can be used to indicate what the run should use as specific settings (an extensive list of the environment variables available will be created later).
+
+# Running the application in a docker container
+
+To run the application in a docker container we need to add a dockerfile and docker compose file. See below for the contents:
+![image info](./src/images/Dockerfile.jpg)
+
+![image info](./src/images/dockercomposefile.jpg)
+
+The docker ignore contains the following added folders (aside from the standard version): **/helper*
+**/images*
+**/videos*
+
+
+If the container is being run, we can map the debug folder in analoguegaugereader\src\debug to a local storage place to get the images saved locally (these will start overwriting since it will update these often should be looked at some time). We also have a lot of Environment variables that can/have to be set.
+
+The must declare Environment variables are:
+
+webcamip            - the IP address of the webcam to use
+webcamport          - the port of the webcam to use
+webcamusername      - the user to connect to the webcam with
+webcampassword      - the password for the user to connect to the webcam with
+brokerport          - the port to communicate to the mqtt broker
+brokeraddress       - the address to communicate to the mqtt broker
+
+The variable that can be declared if desired:
+
+devicename          - used as part of the topic on the mqtt broker message
+debug               - can be set to True so that images are saved in the mapped debug folder and more telemetry is send 
+readingdelay        - the delay to add for the readings standard is 30 fps (about 1 reading each second over mqtt)
+client_id           - the client id to use to communicate with mqtt broker
+angleoffset         - the offset for the total angle calculation, this is set to 220 degrees which should be the meter upright correctly
