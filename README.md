@@ -7,9 +7,11 @@ In this README you will find the different stages/steps of developing the script
 Currently the code is further than the README, the README misses the line finding function and the calculation function in its explanation. This will be added some time soon.
 
 ## Prerequisites
-For following the steps/using this code you need to have certain python packages installed, the required packages can be found in the requirements.txt. To install all of them at once use 
+For following the steps/using this code you need to have certain python packages installed, the required packages can be found in the requirements.txt. To install all of them at once use:
 
-```pip install -r /path/to/requirements.txt``` .
+```
+pip install -r /path/to/requirements.txt
+```
 
 ## Step 1: reading an image
 For the reading of images and live webcam feeds as well as the processing we will use OpenCV (https://opencv.org/) this is a package that focusses on providing functions for computer vision solutions.
