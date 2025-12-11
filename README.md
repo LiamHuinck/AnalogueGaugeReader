@@ -3,13 +3,15 @@ This repository is for reading out the value of a analogue Gauge, in this specif
 
 In this README you will find the different stages/steps of developing the script with the goal described above in mind.
 
-# README Status
+## README Status
 Currently the code is further than the README, the README misses the line finding function and the calculation function in its explanation. This will be added some time soon.
 
-# Prerequisites
-For following the steps/using this code you need to have certain python packages installed, the required packages can be found in the requirements.txt. To install all of them at once use pip install -r /path/to/requirements.txt .
+## Prerequisites
+For following the steps/using this code you need to have certain python packages installed, the required packages can be found in the requirements.txt. To install all of them at once use 
 
-# Step 1: reading an image
+```pip install -r /path/to/requirements.txt``` .
+
+## Step 1: reading an image
 For the reading of images and live webcam feeds as well as the processing we will use OpenCV (https://opencv.org/) this is a package that focusses on providing functions for computer vision solutions.
 
 For early development there is no need to use a livestream constantly, mostly because of convenience, however it will be tested in a later stage with a live camera feed. To do this we will use the opencv function called cv.imread({insert path to image}) with as argument the image we want to use. 
@@ -20,7 +22,7 @@ The image below will be used for demonstrative purposes.
 
 ![image info](./src/images/20251101_103702.jpg)
 
-# Step 2: Image transformations
+## Step 2: Image transformations
 The image shown above is pretty big (4000x3000 pixels) since it was taken with a camera. This is overkill for the proposed analysis and can slow the other functions applied to the image. So the image is resized using the function resizeframe, this function uses the image and the width that is wished to rescale the image into the wished for size. To get the original size of the image you can skip this function call. In this README example it gets rescaled to 700 pixels wide. After the rescale we convert the frame into a grayscale image. This will help with finding the gauge, since this is done on contrast. The result is that we have the image below.
 
 ![image info](./src/images/gray_rescaled_20251101_103702.jpg)
@@ -29,24 +31,24 @@ This image is already easier to process however if we apply the function cv.Houg
 
 ![image info](./src/images/masked_blurred_20251101_103702.jpg)
 
-# Step 3: Detect circles
+## Step 3: Detect circles
 Using the cv.HoughCircles() command we can find the circles in the image and thus locate our gauge meter. For the command we use the maskedimage and some hyperparameters (these will probably have to be tweaked depending on the use case, look for the documentation from OpenCV for this function for more info). This results in an array with 3 columns containing the center coordinates and the radius of the circle. We draw these points for each of the found circles onto the resized image (with colour) and receive the results shown below.
 
 ![image info](./src/images/circle_detected_20251101_103702.jpg)
 
-# Step 4: Outline image
+## Step 4: Outline image
 To help the line detection algorithm we will apply a so called canny filter. This will do some edge detection for us and after parameter tuning we get the image below as a result.
 
 ![image info](./src/images/outlined_image_20251101_103702.jpg)
 
-# Step 5: Detect the pointer
+## Step 5: Detect the pointer
 
 This section is currently based on the fact only 1 line has been found, there will be a branch at some point where code will be written to detect which lines are of interest.
 
 Similarly to cv.HoughCircles() there is a command in OpenCV that detects lines. This comes in two flavours cv.HoughLines() and cv.HoughLinesP(). The difference is that HoughLines works using the polar coordinate system (radius and angle) and HoughlinesP (the p stands for probabilistic) the Cartesian coordinate system (x and y). HoughlinesP is considered more efficient and gives use the start and end coordinates which is also simpler to work with. Given the the coordinates we can draw the line onto the image, see picture. 
 ![image info](./src/images/pointer_detected_20251101_103702.jpg)
 
-# Step 6: Calculate the angle
+## Step 6: Calculate the angle
 The next step is to calculate the angle of our point. This is not that hard to do since we have the 3 required points. we have one that describes the start of the line, one the ending of the line and one the middle of the detected circle. To check which direction we are point we take the bigger value of the formula below:
 
  $Distance = \sqrt{(X_{in} - X_{circle})^2 + (Y_{in} - Y_{circle})^2}$
@@ -65,27 +67,27 @@ In this case the hygro reading is about 73%! Looking back at the very first imag
 
 ![image info](./src/images/reading_showing_20251101_103702.jpg)
 
-# Step 7: Using the webcam for the readings
+## Step 7: Using the webcam for the readings
 
 After some tweaking and setting the camera and light source up I managed to get a pretty good reading of the meter (once again disclaimer that the offset angle is cheated). This setup has proved to be very sensitive though to the light source, surrounding area, angle of the meter and parameters chosen. Therefor the setup will probably have to be tweaked in every setting and monitored for a decent amount of time to make sure it will consistently work. But with all these conditions kept in mind the video below is created from using a USB webcam feed!
 
 https://github.com/user-attachments/assets/c6d5004f-3fcf-4b46-b434-8379c2947cbd
 
-# Step 8: Use MQTT to communicate data
+## Step 8: Use MQTT to communicate data
 
 We are starting to work towards a real IoT solution for real time intelligence, but it's missing one of the most crucial things. Communication over an internet connection! In this project we will use MQTT to communicate the data. I will not go too much into detail about how to set it up, maybe I will if people would find it interesting. For testing I just used the localhost adress and the standard port. To see the results I used MQTT explorer (https://mqtt-explorer.com/). MQTT requires something called an MQTT broker in this case I installed Eclipse Mosquitto (https://mosquitto.org/). Basically, I need to run the code, the code will create a package of information that is then published to the MQTT broker, which then publishes it to the client. The result looks like this in MQTT explorer (the images update slower because I added a sleep function to reduce computational resources used). To prevent updates every frame we need to introduce some kind of check for what the frame count is. I tried implementing just a basic time.sleep() however this will cause the frames to be put in a queue and just have it process every frame, but with an increasing delay (this means the datetime data is no longer matching with the moment the frame is retrieved)!!!
 
 https://github.com/user-attachments/assets/5b076dad-6363-4f84-b03b-d32507b5ec7a
 
-# IP webcam implementation 
+## IP webcam implementation 
 
 So for the release the webcam used is actually an IP webcam, this has now been implemented in the code by creating a credentials.py file with in the variables login and ip. This is needed because I don't want to share those publicly and those settings will be different for everyone anyway. If you do not want to work with an extra .py file then feel free to change the code so that it works with your wishes for the implementation. To set this up it took some tinkering with the network settings on the modem. For setting up the code I refer to the link in Step 1. 
 
-# Deployment to IoT device
+## Deployment to IoT device
 
 For the deployment on an IoT device there should be a docker image that can be ran on the desired IoT device. For this I figured out how to make docker containers. The current docker uses python 3.10, this might be changed in a later version. The dockerfile contains the pip install statement that refers the requirement.txt of this project and creates a directory called analoguegaugereader. To create runs of the docker image I currently use docker desktop, which gaves me an easy way of including environment variables and the required docker runtime. The code has been adjusted so that environment variables can be used to indicate what the run should use as specific settings (an extensive list of the environment variables available will be created later).
 
-# Running the application in a docker container
+## Running the application in a docker container
 
 To run the application in a docker container we need to add a dockerfile and docker compose file. See below for the contents:
 ![image info](./src/images/Dockerfile.jpg)
