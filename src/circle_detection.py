@@ -77,13 +77,13 @@ count = 0
 try:
     capturedevice = cv.VideoCapture('rtsp://'+webcamusername+':'+webcampassword+'@'+webcamip+':'+webcamport+'/stream1')
 except:
-    errordatadictionary = {"key": "error", "value":'Can not create videocapture device', "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
+    errordatadictionary = {"key": "error", "value":'Can not create videocapture device', "timestamp":datetime.now(timezone.utc).isoformat(), "deviceId":devicename}
     payload = json.dumps(errordatadictionary, default=str)
     publish.single(topic+"/telemetry", payload, hostname=broker_address, port=broker_port, client_id=clientid)
     
 
 if not capturedevice.isOpened():
-    errordatadictionary = {"key": "error", "value":'Can not create videocapture device', "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
+    errordatadictionary = {"key": "error", "value":'Can not create videocapture device', "timestamp":datetime.now(timezone.utc).isoformat(), "deviceId":devicename}
     payload = json.dumps(errordatadictionary, default=str)
     publish.single(topic+"/error", payload, hostname=broker_address, port=broker_port, client_id=clientid)
     exit()
@@ -94,7 +94,7 @@ while True:
 
         frame = resizeframe(frame, 700)
     except:
-        errordatadictionary = {"key": "error", "value":'Can not read frame', "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
+        errordatadictionary = {"key": "error", "value":'Can not read frame', "timestamp":datetime.now(timezone.utc).isoformat(), "deviceId":devicename}
         payload = json.dumps(errordatadictionary, default=str)
         publish.single(topic+"/error", payload, hostname=broker_address, port=broker_port, client_id=clientid)
 
@@ -130,7 +130,7 @@ while True:
                 maskedimage = cv.bitwise_and(maskedimage, maskedimage, mask=mask)
 
     except:
-        errordatadictionary = {"key": "error", "value":'Can not apply the masking', "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
+        errordatadictionary = {"key": "error", "value":'Can not apply the masking', "timestamp":datetime.now(timezone.utc).isoformat(), "deviceId":devicename}
         payload = json.dumps(errordatadictionary, default=str)
         publish.single(topic+"/error", payload, hostname=broker_address, port=broker_port, client_id=clientid)
     
@@ -176,7 +176,7 @@ while True:
         frame = cv.putText(frame, f"Humidity: {hygro_reading:.0f}%", (00, 200), cv.FONT_HERSHEY_SIMPLEX, 
                     1, (255,255,255), 2, cv.LINE_AA)
         if count == 0 or count % framecount == 0:
-            datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
+            datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc).isoformat(), "deviceId":devicename}
             payload = json.dumps(datadictionary, default=str)
             publish.single(topic+"/telemetry", payload, hostname=broker_address, port=broker_port, client_id=clientid)
     except:
@@ -184,10 +184,10 @@ while True:
 
     if debug == True:
         try:
-            linedebugdictionary = {"key": "lines", "value": lines, "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
+            linedebugdictionary = {"key": "lines", "value": lines, "timestamp":datetime.now(timezone.utc).isoformat(), "deviceId":devicename}
             payload = json.dumps(linedebugdictionary, default=str)
             publish.single(topic+"/debug/lines", payload, hostname=broker_address, port=broker_port)
-            circledebugdictionary = {"key": "circles", "value": circles, "timestamp":datetime.now(timezone.utc), "deviceId":devicename}
+            circledebugdictionary = {"key": "circles", "value": circles, "timestamp":datetime.now(timezone.utc).isoformat(), "deviceId":devicename}
             payload = json.dumps(circledebugdictionary, default=str)
             publish.single(topic+"/debug/circles", payload, hostname=broker_address, port=broker_port, client_id=clientid)
         except:
