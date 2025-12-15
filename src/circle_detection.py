@@ -5,14 +5,25 @@ import json
 import time
 from datetime import datetime, timezone
 import paho.mqtt.publish as publish
-from credentials import login, ip
 
-broker_address = "localhost"
-broker_port = 1883
+# start env variables
+rtspUri = 'rtsp://admintp:00000000@192.168.3.184/stream1'
+broker_address = "192.168.3.196"
+broker_port = 31883
+deviceId = "vision01"
+topic = "vision/gauge/hygro/"
+# end env variables
 
-topic = "test/topic1"
+# complete topic with device id
+topic = topic + deviceId
+
+# send initialization mqtt message
+publish.single(topic + "/initialized", datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'), hostname=broker_address, port= broker_port)
+
 hygro_reading = 0
-# Helper functions
+
+# Helper functions start
+
 def resizeframe(frame, new_width):
     # Get the original dimensions
     original_height, original_width = frame.shape[:2]
@@ -40,10 +51,12 @@ def calculateangle(lines,circles, correctiondegrees):
         angle = math.degrees(math.atan2(y1-circley, x1-circlex))
     else:
         angle = math.degrees(math.atan2(y2-circley, x2-circlex))
-    totalangle = correctiondegrees+angle
-    return totalangle
+    result = correctiondegrees+angle
+    return result
 
-capturedevice = cv.VideoCapture('rtsp://'+login+'@'+ip+'/stream1')
+# Helper functions end
+
+capturedevice = cv.VideoCapture(rtspUri)
 if not capturedevice.isOpened():
     print("Can't open camera")
     exit()
@@ -53,6 +66,12 @@ count = 0
 while True:
     ret, frame = capturedevice.read()
 
+    # only take every 10th frame into account
+    count = count + 1
+    if count % 10 != 0:
+        continue
+
+    # resize frame for faster processing
     frame = resizeframe(frame, 700)
     
     # convert image to grayscale
@@ -67,8 +86,8 @@ while True:
         minDist=400,      
         param1=40,         
         param2=80,
-        minRadius=50,       
-        maxRadius=95
+        minRadius=100,     
+        maxRadius=250
     )
 
     if circles is not None:
@@ -83,10 +102,17 @@ while True:
             maskedimage = cv.bitwise_and(maskedimage, maskedimage, mask=mask)
 
     outlinedimage = cv.Canny(maskedimage, 100, 300, None, 5)    
-    lines = cv.HoughLinesP(outlinedimage, 1, np.pi / 180, 60, None, minLineLength = 60, maxLineGap= 10)
+
+    lines = cv.HoughLinesP(outlinedimage, 
+                           1, 
+                           np.pi / 180,
+                           threshold = 87, 
+                           lines = None, 
+                           minLineLength = 85, 
+                           maxLineGap= 10)
+    
     if lines is not None:
         if len(lines) > 1:
-            print("multiple lines found")
             for i in range(0, len(lines)):
                 l = lines[i][0]
                 cv.line(frame, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv.LINE_AA)
@@ -94,14 +120,12 @@ while True:
             for i in range(0, len(lines)):
                 l = lines[i][0]
                 cv.line(frame, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv.LINE_AA)
-    else:
-        print("no lines found")
 
     # calculation of the angle that the line is drawn at and which side it is pointing to
     # call function to calculate the angle required to calculate the hygro value
-    # the value of 140 is for the offset of the 0 value (should be on the Y value of the circle center on the right hand side) in degrees
+    # the value of 247.5 is for the offset of the 0 value (should be on the Y value of the circle center on the right hand side) in degrees
     try:
-        totalangle = calculateangle(lines,circles, 140)
+        totalangle = calculateangle(lines,circles, 247.5)
     except:
         pass
 
@@ -109,19 +133,24 @@ while True:
     # 270 is the measuring degrees of the hygro meter
     try:
         hygro_reading = (totalangle)/(270)*100
-        frame = cv.putText(frame, f"Humidity: {hygro_reading:.0f}%", (00, 200), cv.FONT_HERSHEY_SIMPLEX, 
-                    1, (255,255,255), 2, cv.LINE_AA)
-        if count == 0 or count % 30 == 0:
-            datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc), "deviceId":"visiontest"}
+
+        if hygro_reading > 100 or hygro_reading < 0:
+            print("Reading out of range: " + str(hygro_reading))
+        else:
+            # write the hygro reading on the frame
+            frame = cv.putText(frame, f"Humidity: {hygro_reading:.0f}%", (00, 350), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv.LINE_AA)
+            
+            # send message via MQTT
+            datadictionary = {"key": "humidity", "value":int(hygro_reading), "timestamp":datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'), "deviceId":deviceId}
             payload = json.dumps(datadictionary, default=str)
             publish.single(topic, payload, hostname=broker_address, port= broker_port)
-    except:
-        print("No reading possible")
+            print(f"Published: {payload}")
+    except Exception as ex:
+        print("No reading possible: " + str(ex))
 
     # Show result
     cv.imshow('Detected Circle', frame)
 
-    count += 1
     # press q to stop the capturing
     if cv.waitKey(1) == ord('q'):
         break
