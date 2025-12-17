@@ -124,10 +124,15 @@ while True:
     # calculation of the angle that the line is drawn at and which side it is pointing to
     # call function to calculate the angle required to calculate the hygro value
     # the value of 247.5 is for the offset of the 0 value (should be on the Y value of the circle center on the right hand side) in degrees
+    doSend = False
     try:
         totalangle = calculateangle(lines,circles, 247.5)
+        doSend = True
     except:
         pass
+
+    if not doSend:
+        continue
 
     # calculation of the hygro reading
     # 270 is the measuring degrees of the hygro meter
