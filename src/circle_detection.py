@@ -12,6 +12,8 @@ broker_address = "192.168.3.196"
 broker_port = 31883
 deviceId = "vision01"
 topic = "vision/gauge/hygro/"
+frameSkipInterval = 10
+angleCorrectionDegrees = 247.5
 # end env variables
 
 # complete topic with device id
@@ -68,7 +70,7 @@ while True:
 
     # only take every 10th frame into account
     count = count + 1
-    if count % 10 != 0:
+    if count % frameSkipInterval != 0:
         continue
 
     # resize frame for faster processing
@@ -126,7 +128,7 @@ while True:
     # the value of 247.5 is for the offset of the 0 value (should be on the Y value of the circle center on the right hand side) in degrees
     doSend = False
     try:
-        totalangle = calculateangle(lines,circles, 247.5)
+        totalangle = calculateangle(lines,circles, angleCorrectionDegrees)
         doSend = True
     except:
         pass
